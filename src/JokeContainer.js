@@ -5,14 +5,17 @@ import "./JokeContainer.css";
 
 export default class JokeContainer extends Component {
 	static defaultProps = {
-		numJokes : 5
+		numJokes : 10
 	};
 
 	constructor (props) {
 		super(props);
 		this.state = {
-			jokes : JSON.parse(window.localStorage.getItem("jokes") || "[]")
+			jokes     : JSON.parse(window.localStorage.getItem("jokes") || "[]"),
+			isLoading : false
 		};
+		this.seenJokes = new Set(this.state.jokes.map((j) => j.id));
+		console.log(this.seenJokes);
 		// this.getAverageVotes = this.getAverageVotes.bind(this);
 		this.handleClick = this.handleClick.bind(this);
 	}
@@ -28,16 +31,27 @@ export default class JokeContainer extends Component {
 	}
 
 	async getJokes () {
-		let jokes = [];
+		try {
+			let jokes = [];
 
-		while (jokes.length < this.props.numJokes) {
-			let res = await axios.get("https://icanhazdadjoke.com/", { headers: { Accept: "application/json" } });
-			jokes.push({ joke: res.data.joke, id: res.data.id, votes: 0 });
+			while (jokes.length < this.props.numJokes) {
+				let res = await axios.get("https://icanhazdadjoke.com/", { headers: { Accept: "application/json" } });
+
+				if (!this.seenJokes.has(res.data.id)) {
+					jokes.push({ joke: res.data.joke, id: res.data.id, votes: 0 });
+				}
+				else {
+					console.log("Duplicate joke found and discarded.");
+				}
+			}
+
+			this.setState({ jokes, isLoading: false });
+			//store jokes in local memory
+			window.localStorage.setItem("jokes", JSON.stringify(jokes));
+		} catch (e) {
+			alert(`New jokes couldn't be found: ${e}`);
+			this.setState({ isLoading: false });
 		}
-
-		this.setState({ jokes });
-		//store jokes in local memory
-		window.localStorage.setItem("jokes", JSON.stringify(jokes));
 	}
 
 	handleVote (id, delta) {
@@ -47,10 +61,6 @@ export default class JokeContainer extends Component {
 			}),
 			() => window.localStorage.setItem("jokes", JSON.stringify(this.state.jokes))
 		);
-
-		setTimeout(() => {
-			this.setState({ averageVotes: this.getAverageVotes() });
-		}, 1000);
 	}
 
 	// getAverageVotes () {
@@ -74,17 +84,25 @@ export default class JokeContainer extends Component {
 	// }
 
 	handleClick () {
-		this.getJokes();
+		this.setState({ isLoading: true }, this.getJokes);
 	}
 
 	render () {
-		const jokesList = this.state.jokes.map((j) => {
+		let jokes = this.state.jokes.sort((a, b) => b.votes - a.votes);
+		if (this.state.isLoading) {
+			return (
+				<div className="JokeContainer-loader">
+					<i className="far fa-laugh fa-9x fa-spin" />
+					<h1 className="JokeContainer-title">Loading...</h1>
+				</div>
+			);
+		}
+		const jokesList = jokes.map((j) => {
 			return (
 				<Joke
 					key={j.id}
 					joke={j.joke}
 					votes={j.votes}
-					averageVotes={this.state.averageVotes}
 					upvote={() => this.handleVote(j.id, 1)}
 					downvote={() => this.handleVote(j.id, -1)}
 				/>
