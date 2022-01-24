@@ -1,6 +1,6 @@
-# Getting Started with Create React App
+# React SPA - Lifecycle and API
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+This project exhibits use of lifecycles and API calls within React. The SPA is dynamically rendered after asynchronous API calls to fetch 10 random dad jokes. The user can rate the dad jokes and the the application will dynamically style and render components based on thier rating.
 
 ## Available Scripts
 
