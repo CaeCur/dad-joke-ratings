@@ -1,6 +1,6 @@
 # React SPA - Lifecycle and API
 
-This project exhibits use of lifecycles and API calls within React. The SPA is dynamically rendered after asynchronous API calls to fetch 10 random dad jokes. The user can rate the dad jokes and the the application will dynamically style and render components based on thier rating.
+This project exhibits the use of lifecycles and API calls within React. The SPA is dynamically rendered after asynchronous API calls to fetch 10 random dad jokes. The user can rate the dad jokes and the the application will dynamically style and render components based on thier rating.
 
 ## Available Scripts
 
